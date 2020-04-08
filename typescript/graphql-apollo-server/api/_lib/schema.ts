@@ -1,5 +1,6 @@
 import { nexusPrismaPlugin } from 'nexus-prisma'
 import { intArg, makeSchema, objectType, stringArg } from '@nexus/schema'
+import path from 'path'
 
 const User = objectType({
   name: 'User',
@@ -101,12 +102,21 @@ const Mutation = objectType({
   },
 })
 
+const generateArtifacts = Boolean(process.env.GENERATE_ARTIFACTS)
+console.log('generateArtifacts: ', generateArtifacts)
+
 export const schema = makeSchema({
   types: [Query, Mutation, Post, User],
-  plugins: [nexusPrismaPlugin()],
+  plugins: [nexusPrismaPlugin({
+     shouldGenerateArtifacts: generateArtifacts,
+     outputs: {
+       typegen: path.join(__dirname, '/generated/prisma-nexus.ts'),
+     }
+  })],
+  shouldGenerateArtifacts: generateArtifacts,
   outputs: {
-    schema: __dirname + '/../schema.graphql',
-    typegen: __dirname + '/generated/nexus.ts',
+    schema: path.join(__dirname, '/../../schema.graphql'),
+    typegen: path.join(__dirname, '/generated/nexus.ts'),
   },
   typegenAutoConfig: {
     contextType: 'Context.Context',
